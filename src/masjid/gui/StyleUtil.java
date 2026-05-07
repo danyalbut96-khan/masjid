@@ -78,6 +78,9 @@ public class StyleUtil {
     public static JTextField createTextField(String placeholder) {
         JTextField field = new JTextField(15);
         field.setFont(FONT_BODY);
+        field.setBackground(Color.WHITE);
+        field.setForeground(TEXT_PRIMARY);
+        field.setCaretColor(TEXT_PRIMARY);
         field.setBorder(BorderFactory.createCompoundBorder(
                 new LineBorder(BORDER_COLOR, 1, true),
                 BorderFactory.createEmptyBorder(6, 12, 6, 12)
@@ -92,7 +95,7 @@ public class StyleUtil {
     public static JComboBox<String> createComboBox(String[] items) {
         JComboBox<String> combo = new JComboBox<>(items);
         combo.setFont(FONT_BODY);
-        combo.setBackground(BG_CARD);
+        combo.setBackground(Color.WHITE);
         combo.setForeground(TEXT_PRIMARY);
         combo.setPreferredSize(new Dimension(160, 34));
         return combo;
