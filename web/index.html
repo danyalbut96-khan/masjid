@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✦ Masjid Cloud Management System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- AUTH OVERLAY (Sign Up / Log In Gateway) -->
+    <div id="auth-overlay" class="overlay">
+        <div class="auth-card glass-card">
+            <h2 id="auth-title">✦ Log In to Masjid Cloud</h2>
+            <p class="auth-subtitle">Manage donors, timings, and collections securely online</p>
+            
+            <form id="auth-form">
+                <!-- Signup Only Fields -->
+                <div class="input-col signup-field hidden">
+                    <label for="auth-fullname">Full Name:</label>
+                    <input type="text" id="auth-fullname" placeholder="your name">
+                </div>
+                <div class="input-col signup-field hidden">
+                    <label for="auth-masjid">Masjid Name:</label>
+                    <input type="text" id="auth-masjid" placeholder="e.g. Faisal Mosque">
+                </div>
+                <div class="input-col signup-field hidden">
+                    <label for="auth-role">Role:</label>
+                    <select id="auth-role">
+                        <option value="Imam">Maulana / Imam</option>
+                        <option value="Admin">Administrator</option>
+                        <option value="Muqtadi">Muqtadi (Congregant)</option>
+                    </select>
+                </div>
+
+                <!-- Standard Fields -->
+                <div class="input-col">
+                    <label for="auth-email">Email Address:</label>
+                    <input type="email" id="auth-email" placeholder="name@masjid.com" required>
+                </div>
+                <div class="input-col">
+                    <label for="auth-password">Password:</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="primary-btn full-btn" id="auth-submit-btn">Access Dashboard</button>
+            </form>
+            
+            <div class="auth-toggle">
+                <span id="auth-toggle-text">Don't have a Masjid cloud account?</span>
+                <button id="auth-toggle-btn">Create Account</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APPLICATION CONTAINER -->
+    <div class="app-container hidden" id="app-wrapper">
+        <!-- Main Header -->
+        <header class="main-header">
+            <div class="header-top">
+                <div class="header-content">
+                    <h1 id="header-masjid-title">✦ Faisal Mosque</h1>
+                    <p>Live Cloud Portal — Managing donors, collections, timings, and announcements</p>
+                </div>
+                <!-- User Profile & Action Bar -->
+                <div class="header-actions-bar">
+                    <div class="user-badge">
+                        <span class="user-role" id="user-display-role">Imam</span>
+                        <span class="user-name" id="user-display-name">Maulana Qasim</span>
+                    </div>
+                    <button class="secondary-btn small-btn" id="btn-switch-masjid">Switch Masjid</button>
+                    <button class="danger-btn small-btn" id="btn-logout">Log Out</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="nav-tabs">
+            <button class="tab-btn active" data-tab="dashboard">✦ Dashboard</button>
+            <button class="tab-btn" data-tab="donors">✦ Donors</button>
+            <button class="tab-btn" data-tab="donations">✦ Donations</button>
+            <button class="tab-btn" data-tab="announcements">✦ Announcements</button>
+            <button class="tab-btn" data-tab="staff">✦ Staff</button>
+        </nav>
+
+        <!-- Main Body Content -->
+        <main class="main-content">
+            <!-- DASHBOARD TAB -->
+            <section id="dashboard" class="tab-pane active">
+                <div class="stats-grid">
+                    <div class="stat-card donors-card">
+                        <span class="card-icon">👥</span>
+                        <h3>✦ Donors</h3>
+                        <p class="stat-value" id="stat-donors">0</p>
+                    </div>
+                    <div class="stat-card donations-card">
+                        <span class="card-icon">💰</span>
+                        <h3>✦ Donations</h3>
+                        <p class="stat-value" id="stat-donations">0</p>
+                    </div>
+                    <div class="stat-card total-card">
+                        <span class="card-icon">💵</span>
+                        <h3>✦ Total Amount</h3>
+                        <p class="stat-value" id="stat-amount">$0.00</p>
+                    </div>
+                    <div class="stat-card announcements-card">
+                        <span class="card-icon">📢</span>
+                        <h3>✦ Announcements</h3>
+                        <p class="stat-value" id="stat-announcements">0</p>
+                    </div>
+                    <div class="stat-card staff-card">
+                        <span class="card-icon">👤</span>
+                        <h3>✦ Staff</h3>
+                        <p class="stat-value" id="stat-staff">0</p>
+                    </div>
+                </div>
+
+                <div class="dashboard-controls-row">
+                    <div class="refresh-actions">
+                        <button class="primary-btn" id="refresh-dashboard-btn">↻ Refresh Stats</button>
+                        <span class="action-help">Click Refresh to update system statistics and calendar markers</span>
+                    </div>
+                    <!-- Backup & CSV Import/Export -->
+                    <div class="backup-actions">
+                        <button class="secondary-btn" id="btn-export-csv">📥 Download Backup (CSV)</button>
+                        <label class="secondary-btn csv-upload-label" for="csv-import-file">
+                            📤 Upload Backup (CSV)
+                            <input type="file" id="csv-import-file" accept=".csv" style="display:none;">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Dashboard Split Section -->
+                <div class="dashboard-split">
+                    <!-- Prayer Timings Card -->
+                    <div class="glass-card prayer-timings-card">
+                        <h2>✦ Congregation Prayer Timings</h2>
+                        <form id="prayer-form" class="prayer-grid">
+                            <div class="form-row">
+                                <label for="prayer-fajr">Fajr</label>
+                                <input type="text" id="prayer-fajr" value="04:45 AM" required>
+                            </div>
+                            <div class="form-row">
+                                <label for="prayer-dhuhr">Dhuhr</label>
+                                <input type="text" id="prayer-dhuhr" value="01:15 PM" required>
+                            </div>
+                            <div class="form-row">
+                                <label for="prayer-asr">Asr</label>
+                                <input type="text" id="prayer-asr" value="05:00 PM" required>
+                            </div>
+                            <div class="form-row">
+                                <label for="prayer-maghrib">Maghrib</label>
+                                <input type="text" id="prayer-maghrib" value="07:05 PM" required>
+                            </div>
+                            <div class="form-row">
+                                <label for="prayer-isha">Isha</label>
+                                <input type="text" id="prayer-isha" value="08:45 PM" required>
+                            </div>
+                            <div class="form-row">
+                                <label for="prayer-jummah">Jummah</label>
+                                <input type="text" id="prayer-jummah" value="01:30 PM" required>
+                            </div>
+                            <button type="submit" class="primary-btn save-timings-btn">Save Timings</button>
+                        </form>
+                    </div>
+
+                    <!-- Collections Calendar Card -->
+                    <div class="glass-card calendar-card">
+                        <h2>✦ Donation Collections Calendar</h2>
+                        <div class="calendar-header">
+                            <button class="cal-nav-btn" id="cal-prev">◀</button>
+                            <h3 id="cal-month-year">May 2026</h3>
+                            <button class="cal-nav-btn" id="cal-next">▶</button>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="day-name">Sun</div>
+                            <div class="day-name">Mon</div>
+                            <div class="day-name">Tue</div>
+                            <div class="day-name">Wed</div>
+                            <div class="day-name">Thu</div>
+                            <div class="day-name">Fri</div>
+                            <div class="day-name">Sat</div>
+                            <div class="days-container" id="days-grid"></div>
+                        </div>
+                        <div class="selected-day-details">
+                            <div class="details-header">
+                                <span>Collections for Selected Day:</span>
+                                <strong id="selected-day-total">$0.00</strong>
+                            </div>
+                            <div class="details-body" id="selected-day-records">
+                                Select a day to view collection logs
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DONORS TAB -->
+            <section id="donors" class="tab-pane">
+                <div class="glass-card">
+                    <h2>✦ Donor Information</h2>
+                    <form id="donor-form" class="crud-form">
+                        <input type="hidden" id="donor-id">
+                        <div class="form-inputs">
+                            <div class="input-col">
+                                <label for="donor-name">Name:</label>
+                                <input type="text" id="donor-name" placeholder="Full Name" required>
+                            </div>
+                            <div class="input-col">
+                                <label for="donor-phone">Phone:</label>
+                                <input type="text" id="donor-phone" placeholder="Phone Number" required>
+                            </div>
+                            <div class="input-col">
+                                <label for="donor-address">Address:</label>
+                                <input type="text" id="donor-address" placeholder="Address">
+                            </div>
+                            <div class="input-col">
+                                <label for="donor-type">Type:</label>
+                                <select id="donor-type">
+                                    <option value="Regular">Regular</option>
+                                    <option value="One-time">One-time</option>
+                                    <option value="Monthly">Monthly</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn" id="donor-add-btn">Add Donor</button>
+                            <button type="button" class="danger-btn" id="donor-delete-btn">Delete</button>
+                            <button type="button" class="secondary-btn" id="donor-clear-btn">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="glass-card table-card">
+                    <div class="table-header">
+                        <h2>✦ Donor Records</h2>
+                        <div class="search-bar">
+                            <label>✦ Search:</label>
+                            <input type="text" id="donor-search" placeholder="Search donors...">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="donors-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Phone</th>
+                                    <th>Address</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- DONATIONS TAB -->
+            <section id="donations" class="tab-pane">
+                <div class="glass-card">
+                    <h2>✦ Record Donation</h2>
+                    <form id="donation-form" class="crud-form">
+                        <input type="hidden" id="donation-id">
+                        <div class="form-inputs">
+                            <div class="input-col">
+                                <label for="donation-donor">Donor:</label>
+                                <select id="donation-donor" required>
+                                    <option value="">-- Select Donor --</option>
+                                </select>
+                            </div>
+                            <div class="input-col">
+                                <label for="donation-amount">Amount ($):</label>
+                                <input type="number" step="0.01" id="donation-amount" placeholder="Amount" required>
+                            </div>
+                            <div class="input-col">
+                                <label for="donation-date">Date:</label>
+                                <input type="date" id="donation-date" required>
+                            </div>
+                            <div class="input-col">
+                                <label for="donation-purpose">Purpose:</label>
+                                <select id="donation-purpose">
+                                    <option value="Zakat">Zakat</option>
+                                    <option value="Sadaqah">Sadaqah</option>
+                                    <option value="Building Fund">Building Fund</option>
+                                    <option value="Ramadan">Ramadan</option>
+                                    <option value="General">General</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn" id="donation-add-btn">Record Donation</button>
+                            <button type="button" class="danger-btn" id="donation-delete-btn">Delete</button>
+                            <button type="button" class="secondary-btn" id="donation-clear-btn">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="glass-card table-card">
+                    <div class="table-header">
+                        <h2>✦ Donation History</h2>
+                        <div class="table-header-right">
+                            <span class="history-total" id="donation-history-total">Total: $0.00</span>
+                            <div class="search-bar">
+                                <label>✦ Search:</label>
+                                <input type="text" id="donation-search" placeholder="Search donations...">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="donations-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Donor ID</th>
+                                    <th>Donor Name</th>
+                                    <th>Amount</th>
+                                    <th>Date</th>
+                                    <th>Purpose</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ANNOUNCEMENTS TAB -->
+            <section id="announcements" class="tab-pane">
+                <div class="glass-card">
+                    <h2>✦ Publish Announcement</h2>
+                    <form id="announcement-form" class="crud-form">
+                        <input type="hidden" id="announcement-id">
+                        <div class="form-inputs text-area-layout">
+                            <div class="input-col">
+                                <label for="ann-title">Title:</label>
+                                <input type="text" id="ann-title" placeholder="Announcement Title" required>
+                            </div>
+                            <div class="input-col">
+                                <label for="ann-category">Category:</label>
+                                <select id="ann-category">
+                                    <option value="Prayer">Prayer</option>
+                                    <option value="Event">Event</option>
+                                    <option value="Education">Education</option>
+                                    <option value="General">General</option>
+                                </select>
+                            </div>
+                            <div class="input-col">
+                                <label for="ann-date">Date:</label>
+                                <input type="date" id="ann-date" required>
+                            </div>
+                            <div class="input-col full-width">
+                                <label for="ann-desc">Description:</label>
+                                <textarea id="ann-desc" placeholder="Details of the announcement" rows="2" required></textarea>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn" id="ann-add-btn">Publish</button>
+                            <button type="button" class="danger-btn" id="ann-delete-btn">Delete</button>
+                            <button type="button" class="secondary-btn" id="ann-clear-btn">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="glass-card table-card">
+                    <div class="table-header">
+                        <h2>✦ Announcements</h2>
+                        <div class="search-bar">
+                            <label>✦ Search:</label>
+                            <input type="text" id="ann-search" placeholder="Search announcements...">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="announcements-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Date</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STAFF TAB -->
+            <section id="staff" class="tab-pane">
+                <div class="glass-card">
+                    <h2>✦ Staff Information</h2>
+                    <form id="staff-form" class="crud-form">
+                        <input type="hidden" id="staff-id">
+                        <div class="form-inputs">
+                            <div class="input-col">
+                                <label for="staff-name">Name:</label>
+                                <input type="text" id="staff-name" placeholder="Full Name" required>
+                            </div>
+                            <div class="input-col">
+                                <label for="staff-role">Role:</label>
+                                <input type="text" id="staff-role" placeholder="e.g. Imam, Admin" required>
+                            </div>
+                            <div class="input-col">
+                                <label for="staff-phone">Phone:</label>
+                                <input type="text" id="staff-phone" placeholder="Phone Number" required>
+                            </div>
+                            <div class="input-col">
+                                <label for="staff-salary">Monthly Salary ($):</label>
+                                <input type="number" step="0.01" id="staff-salary" placeholder="Salary Amount" required>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="primary-btn" id="staff-add-btn">Add Staff</button>
+                            <button type="button" class="danger-btn" id="staff-delete-btn">Delete</button>
+                            <button type="button" class="secondary-btn" id="staff-clear-btn">Clear</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="glass-card table-card">
+                    <div class="table-header">
+                        <h2>✦ Staff Records</h2>
+                        <div class="search-bar">
+                            <label>✦ Search:</label>
+                            <input type="text" id="staff-search" placeholder="Search staff...">
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <table id="staff-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Role</th>
+                                    <th>Phone</th>
+                                    <th>Salary</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Global Interactive Footer -->
+        <footer class="app-footer">
+            <p>Created with <span class="heart-icon">❤️</span> by <a href="https://cloudexify.site" target="_blank" class="credit-link">CloudExify</a></p>
+        </footer>
+    </div>
+
+    <!-- Custom App Script -->
+    <script src="app.js"></script>
+</body>
+</html>
