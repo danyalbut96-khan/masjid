@@ -1,0 +1,5 @@
+# Ignore environment configurations
+config.js
+.env
+.DS_Store
+node_modules/

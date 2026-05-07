@@ -29,8 +29,12 @@ By pushing your code to a GitHub repository, Vercel will automatically track cha
 3. Import your `masjid-management-system` repository.
 4. In the **Configure Project** step:
    - **Framework Preset**: Other (Standard HTML/CSS)
-   - **Root Directory**: Select `web` (this targets your responsive web app directory!).
-5. Click **"Deploy"**. Vercel will build and launch your live cloud portal under a custom `.vercel.app` URL!
+   - **Root Directory**: Select `web`
+   - **Build Command**: Turn ON the override toggle and type: `node build.js` (This runs our secure key injector!)
+   - **Environment Variables**: Add your Supabase keys here securely:
+     - Name: `SUPABASE_URL` | Value: `your_supabase_url_here`
+     - Name: `SUPABASE_KEY` | Value: `your_supabase_anon_key_here`
+5. Click **"Deploy"**. Vercel will securely inject your environment variables and launch your live cloud portal!
 
 ---
 
