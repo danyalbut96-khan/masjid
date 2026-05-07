@@ -1,6 +1,15 @@
 -- ✦ MASJID CLOUD - DATABASE SCHEMA FOR SUPABASE ✦
 -- Copy and paste this script directly into Supabase SQL Editor to create your tables.
 
+-- 0. Create Users Table
+CREATE TABLE IF NOT EXISTS users (
+    email VARCHAR(255) PRIMARY KEY,
+    password VARCHAR(255) NOT NULL,
+    fullname VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    masjid VARCHAR(255) NOT NULL
+);
+
 -- 1. Create Donors Table
 CREATE TABLE IF NOT EXISTS donors (
     id VARCHAR(50) PRIMARY KEY,
@@ -59,6 +68,12 @@ ALTER TABLE donations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
 ALTER TABLE staff ENABLE ROW LEVEL SECURITY;
 ALTER TABLE namaz ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public select" ON users FOR SELECT USING (true);
+CREATE POLICY "Allow public insert" ON users FOR INSERT WITH CHECK (true);
+CREATE POLICY "Allow public update" ON users FOR UPDATE USING (true);
+CREATE POLICY "Allow public delete" ON users FOR DELETE USING (true);
 
 CREATE POLICY "Allow public select" ON donors FOR SELECT USING (true);
 CREATE POLICY "Allow public insert" ON donors FOR INSERT WITH CHECK (true);

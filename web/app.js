@@ -54,15 +54,69 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function loadMasjidData(masjidName) {
         if (isCloudMode) {
-            // Pseudo-code for Supabase fetching (requires tables: donors, donations, announcements, staff, namaz)
-            /*
             try {
-                const { data: dData } = await supabase.from('donors').select('*').eq('masjid', masjidName);
+                const { data: dData, error: dErr } = await supabase.from('donors').select('*').eq('masjid', masjidName);
+                if (dErr) throw dErr;
                 donors = dData || [];
-                // ... fetch other tables similarly
-            } catch (err) { console.error("Cloud fetch failed", err); }
-            */
-            // For now, even if cloud keys are present, we'll sync local state to avoid breaking if tables aren't setup yet.
+
+                const { data: dnData, error: dnErr } = await supabase.from('donations').select('*').eq('masjid', masjidName);
+                if (dnErr) throw dnErr;
+                donations = dnData ? dnData.map(dn => ({
+                    id: dn.id,
+                    donorId: dn.donor_id,
+                    donorName: dn.donor_name,
+                    amount: parseFloat(dn.amount),
+                    date: dn.date,
+                    purpose: dn.purpose
+                })) : [];
+
+                const { data: aData, error: aErr } = await supabase.from('announcements').select('*').eq('masjid', masjidName);
+                if (aErr) throw aErr;
+                announcements = aData ? aData.map(a => ({
+                    id: a.id,
+                    title: a.title,
+                    category: a.category,
+                    date: a.date,
+                    description: a.description
+                })) : [];
+
+                const { data: sData, error: sErr } = await supabase.from('staff').select('*').eq('masjid', masjidName);
+                if (sErr) throw sErr;
+                staff = sData || [];
+
+                const { data: nData, error: nErr } = await supabase.from('namaz').select('*').eq('masjid', masjidName).maybeSingle();
+                if (nErr) throw nErr;
+                if (nData) {
+                    namaz = {
+                        "Fajr": nData.fajr,
+                        "Dhuhr": nData.dhuhr,
+                        "Asr": nData.asr,
+                        "Maghrib": nData.maghrib,
+                        "Isha": nData.isha,
+                        "Jummah": nData.jummah
+                    };
+                } else {
+                    namaz = { ...defaultNamaz };
+                    await supabase.from('namaz').insert({
+                        masjid: masjidName,
+                        fajr: defaultNamaz["Fajr"],
+                        dhuhr: defaultNamaz["Dhuhr"],
+                        asr: defaultNamaz["Asr"],
+                        maghrib: defaultNamaz["Maghrib"],
+                        isha: defaultNamaz["Isha"],
+                        jummah: defaultNamaz["Jummah"]
+                    });
+                }
+
+                donorIdCounter = donors.length ? Math.max(...donors.map(d => parseInt(d.id.replace(/\D/g, '')) || 0)) + 1 : 1;
+                donationIdCounter = donations.length ? Math.max(...donations.map(dn => parseInt(dn.id.replace(/\D/g, '')) || 0)) + 1 : 1;
+                announcementIdCounter = announcements.length ? Math.max(...announcements.map(a => parseInt(a.id.replace(/\D/g, '')) || 0)) + 1 : 1;
+                staffIdCounter = staff.length ? Math.max(...staff.map(s => parseInt(s.id.replace(/\D/g, '')) || 0)) + 1 : 1;
+
+                return;
+            } catch (err) {
+                console.error("Cloud database fetch failed. Falling back to offline local storage.", err);
+            }
         }
 
         const keyPrefix = `mms_data_${masjidName.toLowerCase().replace(/\s+/g, '_')}_`;
@@ -82,8 +136,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function saveMasjidData(masjidName) {
         if (isCloudMode) {
-            // Supabase backend logic would go here:
-            // e.g., await supabase.from('donors').upsert(donors);
+            try {
+                await supabase.from('namaz').upsert({
+                    masjid: masjidName,
+                    fajr: namaz["Fajr"],
+                    dhuhr: namaz["Dhuhr"],
+                    asr: namaz["Asr"],
+                    maghrib: namaz["Maghrib"],
+                    isha: namaz["Isha"],
+                    jummah: namaz["Jummah"]
+                });
+                return;
+            } catch (err) {
+                console.error("Cloud save failed. Falling back to offline local storage backup.", err);
+            }
         }
 
         const keyPrefix = `mms_data_${masjidName.toLowerCase().replace(/\s+/g, '_')}_`;
@@ -136,15 +202,36 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('auth-password').value;
 
         if (isCloudMode) {
-            // Connect to Supabase Auth
-            /*
-            if (isSignupMode) {
-                const { user, error } = await supabase.auth.signUp({ email, password });
-                // handle metadata insertion
-            } else {
-                const { user, error } = await supabase.auth.signInWithPassword({ email, password });
+            try {
+                if (isSignupMode) {
+                    const fullname = document.getElementById('auth-fullname').value.trim();
+                    const masjid = document.getElementById('auth-masjid').value.trim();
+                    const role = document.getElementById('auth-role').value;
+
+                    const { data: existingUser, error: chkErr } = await supabase.from('users').select('email').eq('email', email).maybeSingle();
+                    if (chkErr) throw chkErr;
+                    if (existingUser) return alert('Email already registered in the cloud database!');
+
+                    currentUser = { email, password, fullname, role, masjid };
+                    const { error: insErr } = await supabase.from('users').insert(currentUser);
+                    if (insErr) throw insErr;
+
+                    alert('Cloud account created successfully!');
+                } else {
+                    const { data: matchedUser, error: selErr } = await supabase.from('users').select('*').eq('email', email).eq('password', password).maybeSingle();
+                    if (selErr) throw selErr;
+                    if (!matchedUser) return alert('Invalid cloud credentials!');
+                    currentUser = matchedUser;
+                }
+
+                localStorage.setItem('mms_active_user', JSON.stringify(currentUser));
+                authForm.reset();
+                checkUserSession();
+                return;
+            } catch (err) {
+                console.error("Cloud auth failed:", err);
+                return alert("Cloud connection/auth error: " + err.message);
             }
-            */
         }
 
         if (isSignupMode) {
@@ -156,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentUser = { email, password, fullname, role, masjid };
             users.push(currentUser);
             localStorage.setItem('mms_users', JSON.stringify(users));
-            alert('Cloud account created successfully!');
+            alert('Local account created successfully!');
         } else {
             const matchedUser = users.find(u => u.email === email && u.password === password);
             if (!matchedUser) return alert('Invalid credentials!');
