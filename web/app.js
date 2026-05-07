@@ -389,5 +389,366 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsText(file);
     });
 
+    // --- 9. DONORS CRUD CONTROLLER ---
+    function renderDonorsTable(list) {
+        const tbody = document.querySelector('#donors-table tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        list.forEach(d => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${d.id}</td><td>${d.name}</td><td>${d.phone}</td><td>${d.address}</td><td>${d.type}</td>`;
+            tr.addEventListener('click', () => selectDonorRow(tr, d));
+            tbody.appendChild(tr);
+        });
+    }
+
+    function selectDonorRow(tr, d) {
+        document.querySelectorAll('#donors-table tr').forEach(r => r.classList.remove('selected'));
+        tr.classList.add('selected');
+        document.getElementById('donor-id').value = d.id;
+        document.getElementById('donor-name').value = d.name;
+        document.getElementById('donor-phone').value = d.phone;
+        document.getElementById('donor-address').value = d.address;
+        document.getElementById('donor-type').value = d.type;
+        document.getElementById('donor-add-btn').textContent = "Update Donor";
+    }
+
+    document.getElementById('donor-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('donor-id').value;
+        const name = document.getElementById('donor-name').value.trim();
+        const phone = document.getElementById('donor-phone').value.trim();
+        const address = document.getElementById('donor-address').value.trim();
+        const type = document.getElementById('donor-type').value;
+
+        let finalId = id;
+        if (id) {
+            const index = donors.findIndex(d => d.id === id);
+            if (index !== -1) donors[index] = { id, name, phone, address, type };
+        } else {
+            finalId = `D${String(donorIdCounter++).padStart(3, '0')}`;
+            donors.push({ id: finalId, name, phone, address, type });
+        }
+
+        if (isCloudMode) {
+            try {
+                await supabase.from('donors').upsert({ id: finalId, name, phone, address, type, masjid: currentUser.masjid });
+            } catch (err) { console.error(err); }
+        }
+
+        saveMasjidData(currentUser.masjid);
+        renderDonorsTable(donors);
+        clearDonorForm();
+        alert('Donor saved successfully!');
+    });
+
+    document.getElementById('donor-delete-btn').addEventListener('click', async () => {
+        const id = document.getElementById('donor-id').value;
+        if (!id) return alert('Select a donor to delete.');
+        if (confirm('Delete this donor record?')) {
+            donors = donors.filter(d => d.id !== id);
+            if (isCloudMode) {
+                try { await supabase.from('donors').delete().eq('id', id); } catch (err) { console.error(err); }
+            }
+            saveMasjidData(currentUser.masjid);
+            renderDonorsTable(donors);
+            clearDonorForm();
+            alert('Donor deleted.');
+        }
+    });
+
+    document.getElementById('donor-clear-btn').addEventListener('click', clearDonorForm);
+
+    function clearDonorForm() {
+        document.getElementById('donor-id').value = '';
+        document.getElementById('donor-name').value = '';
+        document.getElementById('donor-phone').value = '';
+        document.getElementById('donor-address').value = '';
+        document.getElementById('donor-type').value = 'Regular';
+        document.getElementById('donor-add-btn').textContent = "Add Donor";
+        document.querySelectorAll('#donors-table tr').forEach(r => r.classList.remove('selected'));
+    }
+
+    document.getElementById('donor-search').addEventListener('input', (e) => {
+        const kw = e.target.value.toLowerCase();
+        const filtered = donors.filter(d => d.name.toLowerCase().includes(kw) || d.id.toLowerCase().includes(kw));
+        renderDonorsTable(filtered);
+    });
+
+    // --- 10. DONATIONS CRUD CONTROLLER ---
+    function populateDonorSelect() {
+        const select = document.getElementById('donation-donor');
+        if (!select) return;
+        select.innerHTML = '<option value="">-- Select Donor --</option>';
+        donors.forEach(d => {
+            const opt = document.createElement('option');
+            opt.value = d.id;
+            opt.textContent = `${d.id} - ${d.name}`;
+            select.appendChild(opt);
+        });
+    }
+
+    function renderDonationsTable(list) {
+        const tbody = document.querySelector('#donations-table tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        list.forEach(d => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${d.id}</td><td>${d.donorId}</td><td>${d.donorName}</td><td>$${parseFloat(d.amount).toFixed(2)}</td><td>${d.date}</td><td>${d.purpose}</td>`;
+            tr.addEventListener('click', () => selectDonationRow(tr, d));
+            tbody.appendChild(tr);
+        });
+        const totalAmount = list.reduce((sum, d) => sum + parseFloat(d.amount), 0);
+        document.getElementById('donation-history-total').textContent = `Total: $${totalAmount.toFixed(2)}`;
+    }
+
+    function selectDonationRow(tr, d) {
+        document.querySelectorAll('#donations-table tr').forEach(r => r.classList.remove('selected'));
+        tr.classList.add('selected');
+        document.getElementById('donation-id').value = d.id;
+        document.getElementById('donation-donor').value = d.donorId;
+        document.getElementById('donation-amount').value = d.amount;
+        document.getElementById('donation-date').value = d.date;
+        document.getElementById('donation-purpose').value = d.purpose;
+        document.getElementById('donation-add-btn').textContent = "Update Donation";
+    }
+
+    document.getElementById('donation-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('donation-id').value;
+        const donorId = document.getElementById('donation-donor').value;
+        const amount = parseFloat(document.getElementById('donation-amount').value);
+        const date = document.getElementById('donation-date').value;
+        const purpose = document.getElementById('donation-purpose').value;
+
+        const selectedDonor = donors.find(d => d.id === donorId);
+        const donorName = selectedDonor ? selectedDonor.name : "Anonymous";
+
+        let finalId = id;
+        if (id) {
+            const index = donations.findIndex(d => d.id === id);
+            if (index !== -1) donations[index] = { id, donorId, donorName, amount, date, purpose };
+        } else {
+            finalId = `DN${String(donationIdCounter++).padStart(3, '0')}`;
+            donations.push({ id: finalId, donorId, donorName, amount, date, purpose });
+        }
+
+        if (isCloudMode) {
+            try {
+                await supabase.from('donations').upsert({ id: finalId, donor_id: donorId, donor_name: donorName, amount, date, purpose, masjid: currentUser.masjid });
+            } catch (err) { console.error(err); }
+        }
+
+        saveMasjidData(currentUser.masjid);
+        renderDonationsTable(donations);
+        clearDonationForm();
+        alert('Donation recorded successfully!');
+    });
+
+    document.getElementById('donation-delete-btn').addEventListener('click', async () => {
+        const id = document.getElementById('donation-id').value;
+        if (!id) return alert('Select a record to delete.');
+        if (confirm('Delete this collection record permanently?')) {
+            donations = donations.filter(d => d.id !== id);
+            if (isCloudMode) {
+                try { await supabase.from('donations').delete().eq('id', id); } catch (err) { console.error(err); }
+            }
+            saveMasjidData(currentUser.masjid);
+            renderDonationsTable(donations);
+            clearDonationForm();
+            alert('Record deleted.');
+        }
+    });
+
+    document.getElementById('donation-clear-btn').addEventListener('click', clearDonationForm);
+
+    function clearDonationForm() {
+        document.getElementById('donation-id').value = '';
+        document.getElementById('donation-donor').value = '';
+        document.getElementById('donation-amount').value = '';
+        document.getElementById('donation-date').value = new Date().toISOString().substring(0, 10);
+        document.getElementById('donation-purpose').value = 'General';
+        document.getElementById('donation-add-btn').textContent = "Record Donation";
+        document.querySelectorAll('#donations-table tr').forEach(r => r.classList.remove('selected'));
+    }
+
+    document.getElementById('donation-search').addEventListener('input', (e) => {
+        const kw = e.target.value.toLowerCase();
+        const filtered = donations.filter(d => d.donorName.toLowerCase().includes(kw) || d.purpose.toLowerCase().includes(kw));
+        renderDonationsTable(filtered);
+    });
+
+    // --- 11. ANNOUNCEMENTS CRUD CONTROLLER ---
+    function renderAnnouncementsTable(list) {
+        const tbody = document.querySelector('#announcements-table tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        list.forEach(a => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${a.id}</td><td>${a.title}</td><td>${a.category}</td><td>${a.date}</td><td>${a.description}</td>`;
+            tr.addEventListener('click', () => selectAnnouncementRow(tr, a));
+            tbody.appendChild(tr);
+        });
+    }
+
+    function selectAnnouncementRow(tr, a) {
+        document.querySelectorAll('#announcements-table tr').forEach(r => r.classList.remove('selected'));
+        tr.classList.add('selected');
+        document.getElementById('announcement-id').value = a.id;
+        document.getElementById('ann-title').value = a.title;
+        document.getElementById('ann-category').value = a.category;
+        document.getElementById('ann-date').value = a.date;
+        document.getElementById('ann-desc').value = a.description;
+        document.getElementById('ann-add-btn').textContent = "Update Published";
+    }
+
+    document.getElementById('announcement-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('announcement-id').value;
+        const title = document.getElementById('ann-title').value.trim();
+        const category = document.getElementById('ann-category').value;
+        const date = document.getElementById('ann-date').value;
+        const description = document.getElementById('ann-desc').value.trim();
+
+        let finalId = id;
+        if (id) {
+            const index = announcements.findIndex(a => a.id === id);
+            if (index !== -1) announcements[index] = { id, title, category, date, description };
+        } else {
+            finalId = `A${String(announcementIdCounter++).padStart(3, '0')}`;
+            announcements.push({ id: finalId, title, category, date, description });
+        }
+
+        if (isCloudMode) {
+            try {
+                await supabase.from('announcements').upsert({ id: finalId, title, category, date, description, masjid: currentUser.masjid });
+            } catch (err) { console.error(err); }
+        }
+
+        saveMasjidData(currentUser.masjid);
+        renderAnnouncementsTable(announcements);
+        clearAnnouncementForm();
+        alert('Announcement saved!');
+    });
+
+    document.getElementById('ann-delete-btn').addEventListener('click', async () => {
+        const id = document.getElementById('announcement-id').value;
+        if (!id) return alert('Select an announcement to delete.');
+        if (confirm('Delete this announcement?')) {
+            announcements = announcements.filter(a => a.id !== id);
+            if (isCloudMode) {
+                try { await supabase.from('announcements').delete().eq('id', id); } catch (err) { console.error(err); }
+            }
+            saveMasjidData(currentUser.masjid);
+            renderAnnouncementsTable(announcements);
+            clearAnnouncementForm();
+            alert('Announcement deleted.');
+        }
+    });
+
+    document.getElementById('ann-clear-btn').addEventListener('click', clearAnnouncementForm);
+
+    function clearAnnouncementForm() {
+        document.getElementById('announcement-id').value = '';
+        document.getElementById('ann-title').value = '';
+        document.getElementById('ann-category').value = 'General';
+        document.getElementById('ann-date').value = new Date().toISOString().substring(0, 10);
+        document.getElementById('ann-desc').value = '';
+        document.getElementById('ann-add-btn').textContent = "Publish";
+        document.querySelectorAll('#announcements-table tr').forEach(r => r.classList.remove('selected'));
+    }
+
+    document.getElementById('ann-search').addEventListener('input', (e) => {
+        const kw = e.target.value.toLowerCase();
+        const filtered = announcements.filter(a => a.title.toLowerCase().includes(kw) || a.category.toLowerCase().includes(kw));
+        renderAnnouncementsTable(filtered);
+    });
+
+    // --- 12. STAFF CRUD CONTROLLER ---
+    function renderStaffTable(list) {
+        const tbody = document.querySelector('#staff-table tbody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        list.forEach(s => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${s.id}</td><td>${s.name}</td><td>${s.role}</td><td>${s.phone}</td><td>$${parseFloat(s.salary).toFixed(2)}</td>`;
+            tr.addEventListener('click', () => selectStaffRow(tr, s));
+            tbody.appendChild(tr);
+        });
+    }
+
+    function selectStaffRow(tr, s) {
+        document.querySelectorAll('#staff-table tr').forEach(r => r.classList.remove('selected'));
+        tr.classList.add('selected');
+        document.getElementById('staff-id').value = s.id;
+        document.getElementById('staff-name').value = s.name;
+        document.getElementById('staff-role').value = s.role;
+        document.getElementById('staff-phone').value = s.phone;
+        document.getElementById('staff-salary').value = s.salary;
+        document.getElementById('staff-add-btn').textContent = "Update Staff";
+    }
+
+    document.getElementById('staff-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('staff-id').value;
+        const name = document.getElementById('staff-name').value.trim();
+        const role = document.getElementById('staff-role').value.trim();
+        const phone = document.getElementById('staff-phone').value.trim();
+        const salary = parseFloat(document.getElementById('staff-salary').value);
+
+        let finalId = id;
+        if (id) {
+            const index = staff.findIndex(s => s.id === id);
+            if (index !== -1) staff[index] = { id, name, role, phone, salary };
+        } else {
+            finalId = `S${String(staffIdCounter++).padStart(3, '0')}`;
+            staff.push({ id: finalId, name, role, phone, salary });
+        }
+
+        if (isCloudMode) {
+            try {
+                await supabase.from('staff').upsert({ id: finalId, name, role, phone, salary, masjid: currentUser.masjid });
+            } catch (err) { console.error(err); }
+        }
+
+        saveMasjidData(currentUser.masjid);
+        renderStaffTable(staff);
+        clearStaffForm();
+        alert('Staff record saved!');
+    });
+
+    document.getElementById('staff-delete-btn').addEventListener('click', async () => {
+        const id = document.getElementById('staff-id').value;
+        if (!id) return alert('Select a record to delete.');
+        if (confirm('Delete this staff record?')) {
+            staff = staff.filter(s => s.id !== id);
+            if (isCloudMode) {
+                try { await supabase.from('staff').delete().eq('id', id); } catch (err) { console.error(err); }
+            }
+            saveMasjidData(currentUser.masjid);
+            renderStaffTable(staff);
+            clearStaffForm();
+            alert('Staff record deleted.');
+        }
+    });
+
+    document.getElementById('staff-clear-btn').addEventListener('click', clearStaffForm);
+
+    function clearStaffForm() {
+        document.getElementById('staff-id').value = '';
+        document.getElementById('staff-name').value = '';
+        document.getElementById('staff-role').value = '';
+        document.getElementById('staff-phone').value = '';
+        document.getElementById('staff-salary').value = '';
+        document.getElementById('staff-add-btn').textContent = "Add Staff";
+        document.querySelectorAll('#staff-table tr').forEach(r => r.classList.remove('selected'));
+    }
+
+    document.getElementById('staff-search').addEventListener('input', (e) => {
+        const kw = e.target.value.toLowerCase();
+        const filtered = staff.filter(s => s.name.toLowerCase().includes(kw) || s.role.toLowerCase().includes(kw));
+        renderStaffTable(filtered);
+    });
+
     checkUserSession();
 });
