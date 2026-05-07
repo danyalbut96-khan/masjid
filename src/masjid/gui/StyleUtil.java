@@ -10,19 +10,19 @@ import java.awt.*;
  */
 public class StyleUtil {
 
-    public static final Color PRIMARY = new Color(0, 191, 165);        // Teal
-    public static final Color PRIMARY_DARK = new Color(0, 150, 136);    // Dark Teal
-    public static final Color PRIMARY_LIGHT = new Color(178, 223, 219); // Light Teal
-    public static final Color ACCENT = new Color(255, 179, 0);         // Amber/Gold
-    public static final Color BG_MAIN = new Color(10, 14, 20);      // Dark Gray BG
-    public static final Color BG_CARD = new Color(24, 30, 38);
-    public static final Color TEXT_PRIMARY = Color.WHITE;
-    public static final Color TEXT_SECONDARY = new Color(176, 190, 197);
-    public static final Color DANGER = new Color(211, 47, 47);
-    public static final Color SUCCESS = new Color(56, 142, 60);
-    public static final Color TABLE_HEADER_BG = new Color(0, 150, 136);
-    public static final Color TABLE_STRIPE = new Color(33, 40, 50);
-    public static final Color BORDER_COLOR = new Color(38, 50, 56);
+    public static final Color PRIMARY = new Color(5, 150, 105);         // Emerald Green (#059669)
+    public static final Color PRIMARY_DARK = new Color(4, 120, 87);     // Deep Emerald (#047857)
+    public static final Color PRIMARY_LIGHT = new Color(209, 250, 229);  // Soft Pastel Emerald (#d1fae5)
+    public static final Color ACCENT = new Color(245, 158, 11);         // Amber (#f59e0b)
+    public static final Color BG_MAIN = new Color(243, 244, 246);       // Light Gray Background (#f3f4f6)
+    public static final Color BG_CARD = Color.WHITE;                    // Clean White Cards
+    public static final Color TEXT_PRIMARY = new Color(31, 41, 55);     // Dark Slate (#1f2937)
+    public static final Color TEXT_SECONDARY = new Color(107, 114, 128); // Muted Gray (#6b7280)
+    public static final Color DANGER = new Color(239, 68, 68);          // Red (#ef4444)
+    public static final Color SUCCESS = new Color(16, 185, 129);        // Green (#10b981)
+    public static final Color TABLE_HEADER_BG = new Color(5, 150, 105);  // Emerald Header
+    public static final Color TABLE_STRIPE = new Color(249, 250, 251);   // Light Gray Stripe (#f9fafb)
+    public static final Color BORDER_COLOR = new Color(229, 231, 235);   // Light Gray Border (#e5e7eb)
 
     // Fonts
     public static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 22);

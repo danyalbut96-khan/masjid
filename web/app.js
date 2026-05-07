@@ -279,15 +279,28 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function checkUserSession() {
+        const landingPage = document.getElementById('landing-page');
         if (currentUser) {
+            if (landingPage) landingPage.classList.add('hidden');
             authOverlay.classList.add('hidden');
             appWrapper.classList.remove('hidden');
             loadAndRefreshSession();
         } else {
-            authOverlay.classList.remove('hidden');
+            if (landingPage) landingPage.classList.remove('hidden');
+            authOverlay.classList.add('hidden');
             appWrapper.classList.add('hidden');
         }
     }
+
+    const showLoginGateway = () => {
+        const landingPage = document.getElementById('landing-page');
+        if (landingPage) landingPage.classList.add('hidden');
+        authOverlay.classList.remove('hidden');
+    };
+
+    document.getElementById('launch-portal-nav-btn')?.addEventListener('click', showLoginGateway);
+    document.getElementById('launch-portal-hero-btn')?.addEventListener('click', showLoginGateway);
+    document.getElementById('launch-portal-pricing-btn')?.addEventListener('click', showLoginGateway);
 
     async function loadAndRefreshSession() {
         document.getElementById('header-masjid-title').textContent = currentUser.masjid;

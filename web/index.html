@@ -12,8 +12,96 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- MODERN SAAS LANDING PAGE -->
+    <div id="landing-page" class="landing-container">
+        <!-- Top Nav -->
+        <header class="landing-header">
+            <div class="logo">✦ Masjid<span>Cloud</span></div>
+            <nav class="landing-nav">
+                <a href="#features">Features</a>
+                <a href="#pricing">Pricing</a>
+                <a href="https://cloudexify.site" target="_blank">CloudExify</a>
+                <button class="primary-btn nav-cta-btn" id="launch-portal-nav-btn">Launch Cloud Portal</button>
+            </nav>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <span class="badge">🚀 Production-Grade Masjid SaaS Platform</span>
+                <h1>Modernize Your Masjid <br>With Real-Time Cloud</h1>
+                <p>An all-in-one management platform for Imams, administrators, and donors. Handle donation collections, track congregation prayer timings, publish announcements, and manage staff securely from any device.</p>
+                <div class="hero-actions">
+                    <button class="primary-btn hero-cta-btn" id="launch-portal-hero-btn">Start Managing Online</button>
+                    <a href="#features" class="secondary-btn hero-sec-btn">Learn More</a>
+                </div>
+            </div>
+            <div class="hero-stats-badge glass-card">
+                <div class="mini-stat"><strong>99.9%</strong> <span>Cloud Uptime</span></div>
+                <div class="mini-stat"><strong>Real-time</strong> <span>Supabase Sync</span></div>
+                <div class="mini-stat"><strong>Mobile</strong> <span>APK Ready</span></div>
+            </div>
+        </section>
+
+        <!-- Features Grid -->
+        <section id="features" class="features-section">
+            <div class="section-title">
+                <h2>✦ Key Features Built for Admin Efficiency</h2>
+                <p>Designed with deep emerald-accented SaaS aesthetics for optimal readability and mobile accessibility.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card glass-card">
+                    <span class="feat-icon">👥</span>
+                    <h3>Donors Management</h3>
+                    <p>Track, filter, and search donor profiles seamlessly with automatic categorization (Regular, Monthly, One-time).</p>
+                </div>
+                <div class="feature-card glass-card">
+                    <span class="feat-icon">💰</span>
+                    <h3>Real-Time Collections</h3>
+                    <p>Interactive calendars and real-time donation records. Instantly download or upload full CSV data backups.</p>
+                </div>
+                <div class="feature-card glass-card">
+                    <span class="feat-icon">⏰</span>
+                    <h3>Prayer Time Syncing</h3>
+                    <p>Publish and sync congregation timing updates instantly across web, native mobile, and desktop clients.</p>
+                </div>
+                <div class="feature-card glass-card">
+                    <span class="feat-icon">📢</span>
+                    <h3>Announcements Broadcast</h3>
+                    <p>Keep your community updated with prayer changes, events, and education schedules in one centralized hub.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="pricing-section">
+            <div class="section-title">
+                <h2>✦ Simple, Transparent Pricing</h2>
+                <p>Fully scalable cloud hosting with absolutely zero server-maintenance overhead.</p>
+            </div>
+            <div class="pricing-card glass-card premium-badge">
+                <div class="pricing-header">
+                    <h3>Community Edition</h3>
+                    <div class="price">Free<span> / Forever</span></div>
+                </div>
+                <ul class="pricing-features">
+                    <li>✦ Unlimited Donors & Staff</li>
+                    <li>✦ Real-time Supabase Integration</li>
+                    <li>✦ Responsive SaaS Dashboard</li>
+                    <li>✦ Capacitor Mobile APK Bundle</li>
+                    <li>✦ Local CSV Backup & Restore</li>
+                </ul>
+                <button class="primary-btn pricing-btn" id="launch-portal-pricing-btn">Get Started Now</button>
+            </div>
+        </section>
+
+        <footer class="landing-footer">
+            <p>Created with <span class="heart-icon">❤️</span> by <a href="https://cloudexify.site" target="_blank">CloudExify</a></p>
+        </footer>
+    </div>
+
     <!-- AUTH OVERLAY (Sign Up / Log In Gateway) -->
-    <div id="auth-overlay" class="overlay">
+    <div id="auth-overlay" class="overlay hidden">
         <div class="auth-card glass-card">
             <h2 id="auth-title">✦ Log In to Masjid Cloud</h2>
             <p class="auth-subtitle">Manage donors, timings, and collections securely online</p>

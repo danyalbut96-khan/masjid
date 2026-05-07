@@ -20,9 +20,15 @@ java -cp out masjid.MasjidApp
 
 ## 📦 How to Package into a Double-Clickable `.jar`
 To bundle the Java classes into a single executable `.jar` file that you can double-click to launch:
+
+If `jar` is globally recognized:
 ```bash
-# Package compiled classes into a JAR with the main class specified
 jar cfe MasjidApp.jar masjid.MasjidApp -C out .
+```
+
+If `jar` is not recognized (Windows JDK 17 Path):
+```powershell
+& "C:\Program Files\Java\jdk-17\bin\jar.exe" cfe MasjidApp.jar masjid.MasjidApp -C out .
 ```
 You can now run `MasjidApp.jar` on any laptop with Java installed!
 
